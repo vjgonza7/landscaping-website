@@ -11,7 +11,7 @@ export default function HoaRescue() {
   return (
     <section className="bg-[#0a0a0a] px-6 py-20 md:py-28">
       <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_0.85fr] lg:items-center">
-        <div className="border border-red-500/20 bg-[linear-gradient(135deg,#220808,#10120f_55%,#0a0a0a)] p-8 md:p-12">
+        <div className="reveal-left border border-red-500/20 bg-[linear-gradient(135deg,#220808,#10120f_55%,#0a0a0a)] p-8 md:p-12">
           <p className="text-[11px] font-black uppercase tracking-[0.32em] text-red-300">
             HOA Notice Rescue
           </p>
@@ -32,7 +32,7 @@ export default function HoaRescue() {
           </Link>
         </div>
 
-        <div className="space-y-3">
+        <div className="reveal-right space-y-3">
           {issues.map((issue, index) => (
             <div key={issue} className="flex items-start gap-4 border border-white/10 bg-[#10120f] p-5">
               <span className="flex h-8 w-8 shrink-0 items-center justify-center border border-red-400/25 bg-red-500/10 text-xs font-black text-red-200">

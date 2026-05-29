@@ -2,11 +2,23 @@
 
 import { useMemo, useState } from "react";
 
-const services = {
+type ServiceDef =
+  | { label: string; base: [number, number]; sizeRanges?: undefined }
+  | { label: string; base?: undefined; sizeRanges: Record<string, [number, number]> };
+
+const services: Record<string, ServiceDef> = {
   irrigation: { label: "Irrigation repair", base: [95, 425] },
   cleanup: { label: "Yard cleanup", base: [150, 575] },
   landscaping: { label: "Landscape refresh", base: [650, 3200] },
-  hoa: { label: "HOA notice rescue", base: [175, 850] },
+  // HOA uses explicit per-size ranges so displayed prices stay predictable
+  hoa: {
+    label: "HOA notice rescue",
+    sizeRanges: {
+      small:  [85,  250],
+      medium: [150, 450],
+      large:  [300, 750],
+    },
+  },
 };
 
 const sizes = {
@@ -20,10 +32,14 @@ export default function InstantQuoteStarter() {
   const [size, setSize] = useState<keyof typeof sizes>("medium");
   const [urgent, setUrgent] = useState(true);
 
-  const estimate = useMemo(() => {
-    const range = services[service].base;
+  const estimate = useMemo((): [number, number] => {
+    const svc = services[service];
+    // Services with explicit size ranges bypass the factor formula
+    if (svc.sizeRanges) {
+      return svc.sizeRanges[size] as [number, number];
+    }
     const factor = sizes[size].factor * (urgent ? 1.1 : 1);
-    return range.map((value) => Math.round((value * factor) / 25) * 25);
+    return svc.base.map((v) => Math.round((v * factor) / 25) * 25) as [number, number];
   }, [service, size, urgent]);
 
   return (
