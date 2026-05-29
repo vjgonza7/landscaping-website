@@ -46,20 +46,33 @@ export async function sendQuoteEmail(data: QuotePayload): Promise<void> {
 
   const serviceLabel = SERVICE_LABELS[data.service] ?? data.service;
 
-  const leadEmail = await getResend().emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? FROM_EMAIL,
-    to: [toEmail],
-    replyTo: data.email || undefined,
-    subject: `New Quote Request: ${serviceLabel} - ${data.name}`,
-    html: buildLeadEmailHtml({ ...data, serviceLabel }),
-    attachments: data.photos.map((photo) => ({
-      filename: photo.filename,
-      content: photo.content,
-      contentType: photo.contentType,
-    })),
-  });
+  let sendResult: Awaited<ReturnType<ReturnType<typeof getResend>["emails"]["send"]>>;
+  try {
+    sendResult = await getResend().emails.send({
+      from: process.env.RESEND_FROM_EMAIL ?? FROM_EMAIL,
+      to: [toEmail],
+      replyTo: data.email || undefined,
+      subject: `New Quote Request: ${serviceLabel} - ${data.name}`,
+      html: buildLeadEmailHtml({ ...data, serviceLabel }),
+      attachments: data.photos.map((photo) => ({
+        filename: photo.filename,
+        content: photo.content,
+        contentType: photo.contentType,
+      })),
+    });
+  } catch (sdkErr) {
+    console.error("[mailer] Resend SDK threw:", sdkErr);
+    throw new Error("Email service unavailable. Please try again.");
+  }
 
-  if (leadEmail.error) throw new Error(leadEmail.error.message);
+  const { data: emailData, error: emailError } = sendResult;
+  console.log("[mailer] Resend response — id:", emailData?.id, "error:", emailError ? JSON.stringify(emailError) : "none");
+
+  // Treat the send as successful if Resend assigned an ID.
+  // Log any accompanying error but don't surface it as a failure.
+  if (!emailData?.id) {
+    throw new Error(emailError?.message ?? "Email send returned no confirmation ID.");
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   // TWILIO SMS — activate when ready

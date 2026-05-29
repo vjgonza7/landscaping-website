@@ -172,7 +172,6 @@ export default function QuoteForm() {
             <h3 className="text-2xl font-bold text-white mb-2">Request received!</h3>
             <p className="text-gray-400">
               We&apos;ll reach out within 24 hours to schedule your free estimate.
-              A confirmation email is on its way.
             </p>
           </div>
         ) : (
