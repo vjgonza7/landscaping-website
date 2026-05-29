@@ -182,21 +182,13 @@ section[id] {
 
 .transformation-stage {
   position: relative;
-  height: 380vh;
   background: #070807;
-  --stage-p:      1;
-  --stage-dead:   0;
-  --stage-live:   1;
-  --stage-polish: 1;
 }
 
 .stage-sticky {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
+  position: relative;
+  min-height: 88vh;
+  min-height: 88svh;
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
   align-items: center;
@@ -252,37 +244,16 @@ section[id] {
   background: #0b100c;
 }
 
-/* SVG layers driven by CSS custom properties — no transitions needed      */
-/* (smooth interpolation comes from continuous rAF updates in JS)          */
+/* SVG layers — finished (green yard) state, always visible */
 .stage-dead-lawn,
-.stage-dead-plants {
-  opacity: var(--stage-dead, 0);
-}
-
+.stage-dead-plants  { opacity: 0; }
 .stage-live-lawn,
-.stage-plants {
-  opacity: var(--stage-live, 1);
-}
-
-.stage-irrigation {
-  opacity: var(--stage-live, 1);
-  stroke-dasharray: 420;
-  stroke-dashoffset: calc(420px * (1 - var(--stage-live, 1)));
-}
-
+.stage-plants       { opacity: 1; }
+.stage-irrigation   { opacity: 0.9; stroke-dasharray: 420; stroke-dashoffset: 0; }
 .stage-irrigation circle { animation: stage-droplet 2.2s ease-in-out infinite; }
-
 .stage-roof-glint,
-.stage-edging {
-  opacity: var(--stage-polish, 1);
-  stroke-dasharray: 820;
-  stroke-dashoffset: calc(820px * (1 - var(--stage-polish, 1)));
-}
-
-.stage-home {
-  opacity: calc(0.78 + 0.22 * var(--stage-live, 1));
-  transform: translateY(calc(10px * (1 - var(--stage-live, 1))));
-}
+.stage-edging       { opacity: 1; stroke-dasharray: 820; stroke-dashoffset: 0; }
+.stage-home         { opacity: 1; transform: translateY(0); }
 
 /* ── Steps indicator ── */
 .stage-steps {
@@ -463,43 +434,23 @@ button, a {
   .yard-sun {
     animation: none;
   }
-  /* Bypass scroll pinning and show finished state immediately */
-  .transformation-stage {
-    height: auto;
-    --stage-dead:   0;
-    --stage-live:   1;
-    --stage-polish: 1;
-    --stage-p:      1;
-  }
-  .stage-sticky {
-    position: relative;
-    height: auto;
-    min-height: 88svh;
-  }
 }
 
 @media (max-width: 900px) {
-  .transformation-stage { height: 280vh; }
-
   .stage-sticky {
     grid-template-columns: 1fr;
-    padding: 5rem clamp(1.2rem, 5vw, 2rem) 5rem;
-    gap: 2rem;
-    justify-items: center;
+    min-height: 0;
+    padding: 5rem 1.5rem 3rem;
   }
 
-  .stage-copy { text-align: center; }
-  .stage-copy h2 { font-size: clamp(2rem, 8vw, 3.2rem); }
-  .stage-copy p:not(.stage-kicker) { font-size: 0.95rem; }
-
-  .stage-svg { width: min(90vw, 440px); }
+  .stage-svg { width: 100%; }
 
   .stage-steps {
     position: relative;
     left: auto;
     right: auto;
     bottom: auto;
-    width: 100%;
+    grid-column: 1;
     margin-top: 1rem;
   }
 }
