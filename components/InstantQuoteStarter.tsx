@@ -7,9 +7,9 @@ type ServiceDef =
   | { label: string; base?: undefined; sizeRanges: Record<string, [number, number]> };
 
 const services: Record<string, ServiceDef> = {
-  irrigation: { label: "Irrigation repair", base: [95, 425] },
-  cleanup: { label: "Yard cleanup", base: [150, 575] },
-  landscaping: { label: "Landscape refresh", base: [650, 3200] },
+  irrigation: { label: "Irrigation repair", base: [75, 300] },
+  cleanup: { label: "Yard cleanup", base: [100, 400] },
+  landscaping: { label: "Landscape refresh", base: [450, 2000] },
   // HOA uses explicit per-size ranges so displayed prices stay predictable
   hoa: {
     label: "HOA notice rescue",
