@@ -2,10 +2,6 @@
 
 import { useEffect, useRef } from "react";
 
-function clamp(value: number) {
-  return Math.max(0, Math.min(1, value));
-}
-
 export default function TransformationStage() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -13,42 +9,51 @@ export default function TransformationStage() {
     const section = sectionRef.current;
     if (!section) return;
 
-    let ticking = false;
+    // Respect reduced-motion — show finished state immediately, no animation
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      section.dataset.stage = "3";
+      return;
+    }
 
-    const sync = () => {
-      ticking = false;
-      const rect = section.getBoundingClientRect();
-      const range = section.offsetHeight - window.innerHeight;
-      if (range <= 0) return;
+    // No IO support — show finished state immediately
+    if (!("IntersectionObserver" in window)) {
+      section.dataset.stage = "3";
+      return;
+    }
 
-      const progress = clamp(-rect.top / range);
-      const state =
-        rect.top > 0
-          ? "before"
-          : rect.bottom < window.innerHeight
-            ? "after"
-            : "active";
+    // Start in dead state (animation hasn't played yet)
+    section.dataset.stage = "0";
 
-      section.dataset.stageState = state;
-      section.style.setProperty("--stage-p", progress.toFixed(3));
-      section.style.setProperty("--stage-dead", String(clamp(1 - progress * 1.7)));
-      section.style.setProperty("--stage-live", String(clamp((progress - 0.12) * 1.6)));
-      section.style.setProperty("--stage-polish", String(clamp((progress - 0.58) * 2.2)));
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    const runAnimation = () => {
+      timers.push(setTimeout(() => { section.dataset.stage = "1"; }, 450));
+      timers.push(setTimeout(() => { section.dataset.stage = "2"; }, 1450));
+      timers.push(setTimeout(() => { section.dataset.stage = "3"; }, 2500));
     };
 
-    const requestSync = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(sync);
-    };
+    // If the section is already in view on load, start immediately
+    const rect = section.getBoundingClientRect();
+    if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
+      runAnimation();
+      return () => timers.forEach(clearTimeout);
+    }
 
-    window.addEventListener("scroll", requestSync, { passive: true });
-    window.addEventListener("resize", requestSync, { passive: true });
-    sync();
+    // Otherwise wait for the section to scroll into view
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        runAnimation();
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
 
     return () => {
-      window.removeEventListener("scroll", requestSync);
-      window.removeEventListener("resize", requestSync);
+      observer.disconnect();
+      timers.forEach(clearTimeout);
     };
   }, []);
 

@@ -176,23 +176,20 @@ section[id] {
   50% { opacity: 1; transform: scale(1.12); }
 }
 
+/* ── Transformation Stage ─────────────────────────────────────────────── */
+/* Layout: normal-flow section, no scroll-pinning. Animation is driven     */
+/* by IntersectionObserver setting data-stage="0|1|2|3" on the section.    */
+/* Default (no data-stage / no JS): finished state always visible.         */
+
 .transformation-stage {
-  --stage-p: 0;
-  --stage-dead: 1;
-  --stage-live: 0;
-  --stage-polish: 0;
   position: relative;
-  height: 420vh;
   background: #070807;
 }
 
 .stage-sticky {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  overflow: hidden;
+  position: relative;
+  min-height: 88vh;
+  min-height: 88svh;
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
   align-items: center;
@@ -200,20 +197,18 @@ section[id] {
   padding: 6rem clamp(1.5rem, 5vw, 6rem) 4rem;
 }
 
-.transformation-stage[data-stage-state="active"] .stage-sticky {
-  position: fixed;
-}
-
-.transformation-stage[data-stage-state="after"] .stage-sticky {
-  top: auto;
-  bottom: 0;
-}
-
 .stage-bg {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 72% 28%, rgba(216, 183, 106, calc(0.08 + var(--stage-polish) * 0.16)), transparent 28%),
+    radial-gradient(circle at 72% 28%, rgba(216, 183, 106, 0.08), transparent 28%),
+    linear-gradient(120deg, #070807 0%, #0b100c 52%, #15160e 100%);
+  transition: background 1s ease;
+}
+
+.transformation-stage[data-stage="3"] .stage-bg {
+  background:
+    radial-gradient(circle at 72% 28%, rgba(216, 183, 106, 0.22), transparent 28%),
     linear-gradient(120deg, #070807 0%, #0b100c 52%, #15160e 100%);
 }
 
@@ -250,10 +245,7 @@ section[id] {
 }
 
 .stage-visual {
-  transform:
-    translateY(calc((0.5 - var(--stage-p)) * 24px))
-    scale(calc(0.96 + var(--stage-polish) * 0.04));
-  transition: transform 0.08s linear;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stage-svg {
@@ -264,38 +256,73 @@ section[id] {
   background: #0b100c;
 }
 
+/* Shared transitions on all animated SVG elements */
 .stage-dead-lawn,
-.stage-dead-plants {
-  opacity: var(--stage-dead);
-}
-
+.stage-dead-plants,
 .stage-live-lawn,
-.stage-plants {
-  opacity: calc(0.25 + var(--stage-live) * 0.75);
-}
-
-.stage-irrigation {
-  opacity: calc(var(--stage-live) * 0.9);
-  stroke-dasharray: 420;
-  stroke-dashoffset: calc(420px - var(--stage-live) * 420px);
-}
-
-.stage-irrigation circle {
-  animation: stage-droplet 2.2s ease-in-out infinite;
-}
-
+.stage-plants,
+.stage-irrigation,
 .stage-roof-glint,
-.stage-edging {
-  opacity: var(--stage-polish);
-  stroke-dasharray: 820;
-  stroke-dashoffset: calc(820px - var(--stage-polish) * 820px);
-}
-
+.stage-edging,
 .stage-home {
-  transform: translateY(calc((1 - var(--stage-polish)) * 10px));
-  opacity: calc(0.78 + var(--stage-polish) * 0.22);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* ── Default / fallback: finished yard (no JS or IO unavailable) ── */
+.stage-dead-lawn,
+.stage-dead-plants  { opacity: 0; }
+.stage-live-lawn,
+.stage-plants       { opacity: 1; }
+.stage-irrigation   { opacity: 0.9; stroke-dasharray: 420; stroke-dashoffset: 0; }
+.stage-irrigation circle { animation: stage-droplet 2.2s ease-in-out infinite; }
+.stage-roof-glint,
+.stage-edging       { opacity: 1; stroke-dasharray: 820; stroke-dashoffset: 0; }
+.stage-home         { opacity: 1; transform: translateY(0); }
+
+/* ── Stage 0: dead yard ── */
+.transformation-stage[data-stage="0"] .stage-dead-lawn,
+.transformation-stage[data-stage="0"] .stage-dead-plants  { opacity: 1; }
+.transformation-stage[data-stage="0"] .stage-live-lawn,
+.transformation-stage[data-stage="0"] .stage-plants       { opacity: 0.25; }
+.transformation-stage[data-stage="0"] .stage-irrigation   { opacity: 0; stroke-dashoffset: 420px; }
+.transformation-stage[data-stage="0"] .stage-roof-glint,
+.transformation-stage[data-stage="0"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
+.transformation-stage[data-stage="0"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
+
+/* ── Stage 1: irrigation + cleanup ── */
+.transformation-stage[data-stage="1"] .stage-dead-lawn,
+.transformation-stage[data-stage="1"] .stage-dead-plants  { opacity: 1; }
+.transformation-stage[data-stage="1"] .stage-live-lawn,
+.transformation-stage[data-stage="1"] .stage-plants       { opacity: 0.25; }
+.transformation-stage[data-stage="1"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
+.transformation-stage[data-stage="1"] .stage-roof-glint,
+.transformation-stage[data-stage="1"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
+.transformation-stage[data-stage="1"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
+
+/* ── Stage 2: green yard ── */
+.transformation-stage[data-stage="2"] .stage-dead-lawn,
+.transformation-stage[data-stage="2"] .stage-dead-plants  { opacity: 0; }
+.transformation-stage[data-stage="2"] .stage-live-lawn,
+.transformation-stage[data-stage="2"] .stage-plants       { opacity: 1; }
+.transformation-stage[data-stage="2"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
+.transformation-stage[data-stage="2"] .stage-roof-glint,
+.transformation-stage[data-stage="2"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
+.transformation-stage[data-stage="2"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
+
+/* ── Stage 3: estate finish ── */
+.transformation-stage[data-stage="3"] .stage-dead-lawn,
+.transformation-stage[data-stage="3"] .stage-dead-plants  { opacity: 0; }
+.transformation-stage[data-stage="3"] .stage-live-lawn,
+.transformation-stage[data-stage="3"] .stage-plants       { opacity: 1; }
+.transformation-stage[data-stage="3"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
+.transformation-stage[data-stage="3"] .stage-roof-glint,
+.transformation-stage[data-stage="3"] .stage-edging       { opacity: 1; stroke-dashoffset: 0; }
+.transformation-stage[data-stage="3"] .stage-home         { opacity: 1; transform: translateY(0); }
+
+/* ── Steps indicator ── */
 .stage-steps {
   position: absolute;
   left: clamp(1.5rem, 5vw, 6rem);
@@ -313,12 +340,21 @@ section[id] {
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
+  transition: opacity 0.6s ease, color 0.6s ease;
+  opacity: 1;
 }
+.stage-steps span:nth-child(4) { color: #d8b76a; }
 
-.stage-steps span:nth-child(1) { opacity: calc(1 - var(--stage-p) * 1.4); }
-.stage-steps span:nth-child(2) { opacity: calc(var(--stage-live)); }
-.stage-steps span:nth-child(3) { opacity: calc(var(--stage-p)); }
-.stage-steps span:nth-child(4) { opacity: var(--stage-polish); color: #d8b76a; }
+/* Hide most steps while staged animation runs */
+.transformation-stage[data-stage] .stage-steps span { opacity: 0.22; }
+.transformation-stage[data-stage="0"] .stage-steps span:nth-child(1) { opacity: 1; }
+.transformation-stage[data-stage="1"] .stage-steps span:nth-child(1),
+.transformation-stage[data-stage="1"] .stage-steps span:nth-child(2) { opacity: 1; }
+.transformation-stage[data-stage="2"] .stage-steps span:nth-child(1),
+.transformation-stage[data-stage="2"] .stage-steps span:nth-child(2),
+.transformation-stage[data-stage="2"] .stage-steps span:nth-child(3) { opacity: 1; }
+.transformation-stage[data-stage="3"] .stage-steps span { opacity: 1; }
+.transformation-stage[data-stage="3"] .stage-steps span:nth-child(4) { color: #d8b76a; }
 
 @keyframes stage-droplet {
   0%, 100% { opacity: 0.18; transform: translateY(5px); }
@@ -477,26 +513,25 @@ button, a {
   .yard-sun {
     animation: none;
   }
-  .transformation-stage {
-    height: auto;
-  }
-  .stage-sticky {
-    position: relative;
-    height: auto;
-    min-height: 0;
+  /* Disable transitions on stage elements for reduced-motion */
+  .stage-dead-lawn,
+  .stage-dead-plants,
+  .stage-live-lawn,
+  .stage-plants,
+  .stage-irrigation,
+  .stage-roof-glint,
+  .stage-edging,
+  .stage-home,
+  .stage-steps span {
+    transition: none !important;
   }
 }
 
 @media (max-width: 900px) {
-  .transformation-stage {
-    height: auto;
-  }
-
   .stage-sticky {
-    position: relative;
-    height: auto;
     grid-template-columns: 1fr;
-    padding: 5rem 1.5rem 4rem;
+    min-height: 0;
+    padding: 5rem 1.5rem 3rem;
   }
 
   .stage-svg {
