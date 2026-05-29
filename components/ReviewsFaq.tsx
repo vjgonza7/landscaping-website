@@ -77,6 +77,26 @@ export default function ReviewsFaq() {
             </div>
           ))}
         </div>
+
+        <div className="mt-14 border border-[#d8b76a]/20 bg-[#0e110e] p-8 md:p-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-[#d8b76a]">
+              Ready to get started?
+            </p>
+            <p className="mt-2 text-2xl font-black leading-tight text-white md:text-3xl">
+              Get a free estimate — no obligation.
+            </p>
+            <p className="mt-2 text-sm text-white/42">
+              ROC licensed · Fully insured · Response within 24 hours
+            </p>
+          </div>
+          <a
+            href="#quote"
+            className="flex-shrink-0 inline-flex items-center justify-center bg-[#d8b76a] px-8 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-colors hover:bg-[#f0cf81] md:self-center"
+          >
+            Request Free Quote
+          </a>
+        </div>
       </div>
     </section>
   );

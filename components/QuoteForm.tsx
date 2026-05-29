@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type FormState = "idle" | "submitting" | "success" | "error";
 
@@ -17,6 +17,7 @@ type QuotePhoto = {
 export default function QuoteForm() {
   const [state, setState] = useState<FormState>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const errorRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -32,10 +33,10 @@ export default function QuoteForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    const value = e.target instanceof HTMLInputElement && e.target.type === "checkbox"
-      ? e.target.checked
-      : e.target.value;
-
+    const value =
+      e.target instanceof HTMLInputElement && e.target.type === "checkbox"
+        ? e.target.checked
+        : e.target.value;
     setForm((prev) => ({ ...prev, [e.target.name]: value }));
   };
 
@@ -44,16 +45,13 @@ export default function QuoteForm() {
     setErrorMsg("");
 
     if (files.length > MAX_PHOTOS) {
-      setErrorMsg("Please upload no more than 3 yard photos.");
-      setState("error");
+      setError("Please upload no more than 3 yard photos.");
       event.target.value = "";
       return;
     }
-
-    const oversized = files.find((file) => file.size > MAX_PHOTO_SIZE);
+    const oversized = files.find((f) => f.size > MAX_PHOTO_SIZE);
     if (oversized) {
-      setErrorMsg("Each photo must be under 4MB.");
-      setState("error");
+      setError("Each photo must be under 4MB.");
       event.target.value = "";
       return;
     }
@@ -81,37 +79,52 @@ export default function QuoteForm() {
     if (state === "error") setState("idle");
   };
 
+  function setError(msg: string) {
+    setErrorMsg(msg);
+    setState("error");
+    requestAnimationFrame(() => errorRef.current?.focus());
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMsg("");
 
+    // Client-side validation (mirrors server-side for instant feedback)
+    if (form.name.trim().length < 2) {
+      setError("Please enter your full name.");
+      return;
+    }
+    if (form.phone.replace(/\D/g, "").length < 7) {
+      setError("Please enter a valid phone number.");
+      return;
+    }
     if (!EMAIL_RE.test(form.email.trim())) {
-      setErrorMsg("Please enter a valid email address so we can send your confirmation.");
-      setState("error");
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!form.service) {
+      setError("Please select a service so we can route your request.");
       return;
     }
 
     setState("submitting");
+    setErrorMsg("");
 
     try {
       const res = await fetch("/api/quote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // honeypot is always empty for real users; bots fill it via automation
         body: JSON.stringify({ ...form, photos, honeypot: "" }),
       });
 
       const data = await res.json();
 
       if (!res.ok || !data.ok) {
-        setErrorMsg(data.error ?? "Something went wrong. Please try again.");
-        setState("error");
+        setError(data.error ?? "Something went wrong. Please try again.");
       } else {
         setState("success");
       }
     } catch {
-      setErrorMsg("Network error. Please check your connection and try again.");
-      setState("error");
+      setError("Network error. Please check your connection and try again.");
     }
   };
 
@@ -121,13 +134,20 @@ export default function QuoteForm() {
         {/* Header */}
         <div className="text-center mb-12">
           <span className="text-sm font-semibold uppercase tracking-widest text-[#d8b76a]">
-            Get Started
+            Free Quote
           </span>
           <h2 className="mt-3 text-4xl md:text-5xl font-bold text-white">
-            Request a Free Quote
+            Get Your Free Estimate
           </h2>
           <p className="mt-4 text-base text-white/52">
-            Tell us about your yard. We&apos;ll get back to you within 24 hours.
+            Tell us about your yard. We&apos;ll respond within 24 hours with a
+            no-obligation estimate.
+          </p>
+          <p className="mt-3 text-sm text-white/34">
+            Prefer to talk?{" "}
+            <a href="tel:+16024354418" className="text-[#d8b76a] hover:underline underline-offset-2">
+              Call (602) 435-4418
+            </a>
           </p>
         </div>
 
@@ -135,22 +155,58 @@ export default function QuoteForm() {
           <div className="border border-[#d8b76a]/30 bg-[#111111] p-12 text-center">
             <div className="flex justify-center mb-5">
               <div className="flex h-16 w-16 items-center justify-center border border-[#d8b76a]/30 bg-[#d8b76a]/15">
-                <svg viewBox="0 0 24 24" className="h-8 w-8 text-[#d8b76a]" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="h-8 w-8 text-[#d8b76a]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">Request received!</h3>
             <p className="text-gray-400">
-              We&apos;ll reach out within 24 hours to schedule your free estimate. A confirmation email is on its way.
+              We&apos;ll reach out within 24 hours to schedule your free estimate.
+              A confirmation email is on its way.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} noValidate className="space-y-5 border border-white/10 bg-[#111111] p-6 sm:p-8">
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            aria-label="Free quote request form"
+            className="space-y-5 border border-white/10 bg-[#111111] p-6 sm:p-8"
+          >
+            <p className="text-xs text-white/34">
+              Fields marked <span className="text-[#d8b76a]">*</span> are required.
+            </p>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <Field label="Full Name" name="name" type="text" value={form.name} onChange={handleChange} placeholder="Jane Smith" required />
-              <Field label="Phone" name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="(480) 555-0100" required />
+              <Field
+                label="Full Name"
+                name="name"
+                type="text"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Jane Smith"
+                required
+              />
+              <Field
+                label="Phone"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleChange}
+                placeholder="(480) 555-0100"
+                required
+              />
             </div>
+
             <Field
               label="Email"
               name="email"
@@ -163,7 +219,9 @@ export default function QuoteForm() {
             />
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="service" className="text-sm font-medium text-gray-300">Service Needed</label>
+              <label htmlFor="service" className="text-sm font-medium text-gray-300">
+                Service Needed <span className="text-[#d8b76a]" aria-hidden="true">*</span>
+              </label>
               <div className="relative">
                 <select
                   id="service"
@@ -171,9 +229,12 @@ export default function QuoteForm() {
                   value={form.service}
                   onChange={handleChange}
                   required
+                  aria-required="true"
                   className="w-full cursor-pointer appearance-none border border-white/10 bg-[#0a0a0a] px-4 py-3 pr-10 text-sm text-white transition-colors focus:border-[#d8b76a] focus:outline-none"
                 >
-                  <option value="" disabled>Select a service…</option>
+                  <option value="" disabled>
+                    Select a service…
+                  </option>
                   <option value="irrigation">Irrigation Repair</option>
                   <option value="landscaping">Landscaping</option>
                   <option value="cleanup">Yard Cleanup</option>
@@ -182,7 +243,16 @@ export default function QuoteForm() {
                   <option value="multiple">Multiple Services</option>
                   <option value="other">Other / Not Sure</option>
                 </select>
-                <svg viewBox="0 0 16 16" className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 16 16"
+                  className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M4 6l4 4 4-4" />
                 </svg>
               </div>
@@ -190,7 +260,9 @@ export default function QuoteForm() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="urgency" className="text-sm font-medium text-gray-300">Timeline</label>
+                <label htmlFor="urgency" className="text-sm font-medium text-gray-300">
+                  Timeline
+                </label>
                 <select
                   id="urgency"
                   name="urgency"
@@ -200,13 +272,15 @@ export default function QuoteForm() {
                 >
                   <option value="standard">Flexible</option>
                   <option value="soon">This week</option>
-                  <option value="urgent">Urgent</option>
+                  <option value="urgent">Urgent — ASAP</option>
                   <option value="hoa">HOA notice / deadline</option>
                 </select>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label htmlFor="budget" className="text-sm font-medium text-gray-300">Budget Range</label>
+                <label htmlFor="budget" className="text-sm font-medium text-gray-300">
+                  Approximate Budget
+                </label>
                 <select
                   id="budget"
                   name="budget"
@@ -216,28 +290,33 @@ export default function QuoteForm() {
                 >
                   <option value="not-sure">Not sure yet</option>
                   <option value="under-500">Under $500</option>
-                  <option value="500-1500">$500 - $1,500</option>
-                  <option value="1500-5000">$1,500 - $5,000</option>
+                  <option value="500-1500">$500 – $1,500</option>
+                  <option value="1500-5000">$1,500 – $5,000</option>
                   <option value="5000-plus">$5,000+</option>
                 </select>
               </div>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="message" className="text-sm font-medium text-gray-300">Tell Us About Your Yard</label>
+              <label htmlFor="message" className="text-sm font-medium text-gray-300">
+                Describe Your Yard
+              </label>
               <textarea
                 id="message"
                 name="message"
                 value={form.message}
                 onChange={handleChange}
                 rows={4}
-                placeholder="Describe the issues, size of your yard, location in AZ, etc."
-                className="w-full resize-none border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white transition-colors focus:border-[#d8b76a] focus:outline-none"
+                placeholder="What's going on? Location in AZ, yard size, specific issues, etc."
+                className="w-full resize-none border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white transition-colors placeholder:text-white/22 focus:border-[#d8b76a] focus:outline-none"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="photos" className="text-sm font-medium text-gray-300">Upload Yard Photos</label>
+              <label htmlFor="photos" className="text-sm font-medium text-gray-300">
+                Yard Photos{" "}
+                <span className="text-white/34 font-normal">(optional — helps us estimate faster)</span>
+              </label>
               <input
                 id="photos"
                 name="photos"
@@ -247,7 +326,7 @@ export default function QuoteForm() {
                 onChange={handlePhotoChange}
                 className="w-full border border-white/10 bg-[#0a0a0a] px-4 py-3 text-sm text-white file:mr-4 file:border-0 file:bg-[#d8b76a] file:px-4 file:py-2 file:text-xs file:font-black file:uppercase file:tracking-[0.12em] file:text-black"
               />
-              <p className="text-xs text-white/34">Attach up to 3 photos, 4MB each.</p>
+              <p className="text-xs text-white/34">Up to 3 photos, 4 MB each.</p>
               {photos.length > 0 && (
                 <p className="text-xs text-[#d8b76a]">
                   {photos.length} photo{photos.length === 1 ? "" : "s"} ready to send.
@@ -255,7 +334,7 @@ export default function QuoteForm() {
               )}
             </div>
 
-            <label className="flex items-start gap-3 border border-white/10 bg-black/20 p-4">
+            <label className="flex items-start gap-3 border border-white/10 bg-black/20 p-4 cursor-pointer">
               <input
                 type="checkbox"
                 name="smsConsent"
@@ -264,13 +343,29 @@ export default function QuoteForm() {
                 className="mt-0.5 h-4 w-4 accent-[#d8b76a]"
               />
               <span className="text-xs leading-6 text-white/48">
-                Text me about my quote. Message and data rates may apply.
+                I agree to receive text messages about my quote request. Message and data
+                rates may apply. Reply STOP to opt out.
               </span>
             </label>
 
             {state === "error" && (
-              <div className="flex items-start gap-3 bg-red-950/40 border border-red-500/30 rounded-xl px-4 py-3">
-                <svg viewBox="0 0 20 20" className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <div
+                ref={errorRef}
+                role="alert"
+                aria-live="assertive"
+                tabIndex={-1}
+                className="flex items-start gap-3 bg-red-950/40 border border-red-500/30 px-4 py-3 focus:outline-none"
+              >
+                <svg
+                  viewBox="0 0 20 20"
+                  className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
                   <path d="M10 3L2 17h16L10 3z" />
                   <line x1="10" y1="9" x2="10" y2="12" />
                   <circle cx="10" cy="14.5" r="0.5" fill="currentColor" />
@@ -287,7 +382,7 @@ export default function QuoteForm() {
               {state === "submitting" ? "Sending…" : "Send My Free Quote Request →"}
             </button>
 
-            <p className="text-center text-xs text-gray-600">
+            <p className="text-center text-xs text-white/24">
               No spam. No obligation. Just a free estimate from your local AZ crew.
             </p>
           </form>
@@ -318,7 +413,14 @@ function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium text-gray-300">{label}</label>
+      <label htmlFor={name} className="text-sm font-medium text-gray-300">
+        {label}{" "}
+        {required && (
+          <span className="text-[#d8b76a]" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
       <input
         id={name}
         name={name}
@@ -327,12 +429,15 @@ function Field({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
+        aria-required={required}
         aria-invalid={invalid || undefined}
-        pattern={name === "email" ? "[^\\s@]+@[^\\s@]+\\.[^\\s@]+" : undefined}
-        title={name === "email" ? "Please enter a valid email address." : undefined}
-        autoComplete={name === "email" ? "email" : name === "phone" ? "tel" : name === "name" ? "name" : undefined}
+        autoComplete={
+          name === "email" ? "email" : name === "phone" ? "tel" : name === "name" ? "name" : undefined
+        }
         className={`w-full border bg-[#0a0a0a] px-4 py-3 text-sm text-white transition-colors placeholder:text-white/22 focus:outline-none ${
-          invalid ? "border-red-500/70 focus:border-red-400" : "border-white/10 focus:border-[#d8b76a]"
+          invalid
+            ? "border-red-500/70 focus:border-red-400"
+            : "border-white/10 focus:border-[#d8b76a]"
         }`}
       />
     </div>

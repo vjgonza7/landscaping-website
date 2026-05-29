@@ -1,27 +1,27 @@
 export default function Hero() {
   return (
-    <section className="premium-hero relative min-h-[92svh] overflow-hidden bg-[#070807] px-6 pt-28 pb-14 sm:px-10 lg:px-16">
+    <section className="premium-hero relative overflow-hidden bg-[#070807] px-6 pt-28 pb-14 sm:px-10 lg:px-16">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_28%,rgba(216,183,106,0.16),transparent_32%),linear-gradient(115deg,#070807_0%,#0b100c_48%,#12170f_100%)]" />
       <div className="absolute inset-0 opacity-[0.18] [background-image:linear-gradient(rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:72px_72px]" />
       <div className="absolute inset-x-0 bottom-0 h-40 bg-[linear-gradient(to_top,#0a0a0a_0%,rgba(10,10,10,0)_100%)]" />
 
       <div className="relative z-10 mx-auto grid min-h-[calc(92svh-10rem)] max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-[0.9fr_0.72fr]">
         <div className="max-w-3xl">
-          <h1 className="max-w-4xl text-[3rem] font-black leading-[0.92] tracking-normal text-white sm:text-[4.6rem] lg:text-[5.8rem]">
+          <h1 className="animate-fade-in-up max-w-4xl text-[3rem] font-black leading-[0.92] tracking-normal text-white sm:text-[4.6rem] lg:text-[5.8rem]">
             Outdoor Spaces With Estate-Level Finish
           </h1>
 
-          <p className="mt-5 max-w-xl text-base leading-8 text-white/68 sm:text-lg">
+          <p className="animate-fade-in-up-delay-1 mt-5 max-w-xl text-base leading-8 text-white/68 sm:text-lg">
             Design-forward landscaping, precise irrigation, and clean installs
             built to look elevated in the Arizona heat.
           </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+          <div className="animate-fade-in-up-delay-2 mt-7 flex flex-col gap-3 sm:flex-row">
             <a
               href="#quote"
               className="inline-flex items-center justify-center bg-[#d8b76a] px-8 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-colors hover:bg-[#f0cf81]"
             >
-              Request a Private Quote
+              Get My Free Quote
             </a>
             <a
               href="#projects"
@@ -31,7 +31,18 @@ export default function Hero() {
             </a>
           </div>
 
-          <dl className="mt-9 grid max-w-2xl grid-cols-3 border-y border-white/10 py-5">
+          <p className="animate-fade-in-up-delay-2 mt-4 text-sm text-white/38">
+            or call{" "}
+            <a
+              href="tel:+16024354418"
+              className="text-[#d8b76a] underline-offset-2 hover:underline"
+            >
+              (602) 435-4418
+            </a>{" "}
+            — same-day response on urgent requests
+          </p>
+
+          <dl className="animate-fade-in-up-delay-3 mt-9 grid max-w-2xl grid-cols-3 border-y border-white/10 py-5">
             <div>
               <dt className="text-2xl font-black text-white">8+</dt>
               <dd className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-white/42">Years</dd>
@@ -134,15 +145,11 @@ export default function Hero() {
               <div className="grid grid-cols-2 gap-4 border-t border-[#d8b76a]/45 bg-black/18 px-1 pt-5">
                 <div className="border-l-2 border-[#d8b76a] pl-4">
                   <p className="text-5xl font-black leading-none text-[#f0cf81] drop-shadow-[0_0_18px_rgba(216,183,106,0.22)]">24h</p>
-                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/62">
-                    Response
-                  </p>
+                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/62">Response</p>
                 </div>
                 <div className="border-l-2 border-[#d8b76a] pl-4">
                   <p className="text-5xl font-black leading-none text-[#f0cf81] drop-shadow-[0_0_18px_rgba(216,183,106,0.22)]">AZ</p>
-                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/62">
-                    Climate Built
-                  </p>
+                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.2em] text-white/62">Climate Built</p>
                 </div>
               </div>
             </div>

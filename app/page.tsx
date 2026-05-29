@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <>
       <Nav />
-      <main>
+      <main id="main-content">
         <Hero />
         <div className="relative z-10 bg-[#0a0a0a]">
           <HiddenTools />
