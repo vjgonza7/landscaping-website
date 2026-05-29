@@ -24,7 +24,6 @@ const SERVICE_LABELS: Record<string, string> = {
 
 const CONTACT_EMAIL = "veilllc0555@gmail.com";
 const FROM_EMAIL = "VIRENZA Landscape Solutions <onboarding@resend.dev>";
-const CONTACT_PHONE = "602-435-4418";
 
 export type QuotePayload = {
   name: string;
@@ -47,32 +46,20 @@ export async function sendQuoteEmail(data: QuotePayload): Promise<void> {
 
   const serviceLabel = SERVICE_LABELS[data.service] ?? data.service;
 
-  const [leadEmail, confirmationEmail] = await Promise.all([
-    getResend().emails.send({
-      // While testing: onboarding@resend.dev can only send to verified Resend recipients.
-      // After domain verification, set RESEND_FROM_EMAIL to something like quotes@virenzalawn.com.
-      from: process.env.RESEND_FROM_EMAIL ?? FROM_EMAIL,
-      to: [toEmail],
-      replyTo: data.email,
-      subject: `New Quote Request: ${serviceLabel} - ${data.name}`,
-      html: buildLeadEmailHtml({ ...data, serviceLabel }),
-      attachments: data.photos.map((photo) => ({
-        filename: photo.filename,
-        content: photo.content,
-        contentType: photo.contentType,
-      })),
-    }),
-    getResend().emails.send({
-      from: process.env.RESEND_FROM_EMAIL ?? FROM_EMAIL,
-      to: [data.email],
-      replyTo: toEmail,
-      subject: "We received your VIRENZA quote request",
-      html: buildCustomerConfirmationHtml({ ...data, serviceLabel }),
-    }),
-  ]);
+  const leadEmail = await getResend().emails.send({
+    from: process.env.RESEND_FROM_EMAIL ?? FROM_EMAIL,
+    to: [toEmail],
+    replyTo: data.email || undefined,
+    subject: `New Quote Request: ${serviceLabel} - ${data.name}`,
+    html: buildLeadEmailHtml({ ...data, serviceLabel }),
+    attachments: data.photos.map((photo) => ({
+      filename: photo.filename,
+      content: photo.content,
+      contentType: photo.contentType,
+    })),
+  });
 
   if (leadEmail.error) throw new Error(leadEmail.error.message);
-  if (confirmationEmail.error) throw new Error(confirmationEmail.error.message);
 
   // ─────────────────────────────────────────────────────────────────────────
   // TWILIO SMS — activate when ready
@@ -147,31 +134,6 @@ function buildLeadEmailHtml(d: QuotePayload & { serviceLabel: string }): string 
 </html>`.trim();
 }
 
-function buildCustomerConfirmationHtml(d: QuotePayload & { serviceLabel: string }): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:#ffffff;">
-  <div style="max-width:580px;margin:0 auto;padding:32px 16px;">
-    <div style="background:#111111;border:1px solid #27221a;border-radius:16px;overflow:hidden;">
-      <div style="background:#15140d;border-bottom:1px solid #3a3017;padding:30px 32px;">
-        <p style="margin:0;color:#f0cf81;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;">VIRENZA Landscape Solutions</p>
-        <h1 style="margin:12px 0 0;color:#ffffff;font-size:24px;line-height:1.25;">Thank you for reaching out.</h1>
-      </div>
-      <div style="padding:28px 32px;color:#d1d5db;font-size:15px;line-height:1.7;">
-        <p style="margin:0 0 16px;">Hi ${escapeHtml(d.name)},</p>
-        <p style="margin:0 0 16px;">We received your request for ${escapeHtml(d.serviceLabel)}. Thank you for reaching out. We will get back to you as soon as possible.</p>
-        <div style="margin:24px 0;padding:16px;background:#0a0a0a;border:1px solid #2b2517;border-radius:10px;">
-          <p style="margin:0 0 8px;color:#9ca3af;font-size:12px;text-transform:uppercase;letter-spacing:2px;">Your request</p>
-          <p style="margin:0;color:#ffffff;">${escapeHtml(d.message || "No extra details provided.")}</p>
-        </div>
-        <p style="margin:0;">Need to reach us sooner? Call <a href="tel:+16024354418" style="color:#f0cf81;text-decoration:none;">${CONTACT_PHONE}</a> or reply to this email.</p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`.trim();
-}
 
 function formatUrgency(value: string): string {
   return (
