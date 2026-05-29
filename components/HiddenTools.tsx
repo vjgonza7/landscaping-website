@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import HeatSurvivalPredictor from "./HeatSurvivalPredictor";
-import HoaReadinessQuiz from "./HoaReadinessQuiz";
 
-type Tool = "heat-survival" | "hoa-ready" | null;
+type Tool = "heat-survival" | null;
 
 function getActiveTool(): Tool {
   const params = new URLSearchParams(window.location.search);
@@ -12,7 +11,6 @@ function getActiveTool(): Tool {
   const hash = window.location.hash.replace("#", "");
 
   if (tool === "heat-survival" || hash === "heat-survival") return "heat-survival";
-  if (tool === "hoa-ready" || hash === "hoa-ready") return "hoa-ready";
   return null;
 }
 
@@ -38,6 +36,5 @@ export default function HiddenTools() {
   }, [activeTool]);
 
   if (activeTool === "heat-survival") return <HeatSurvivalPredictor />;
-  if (activeTool === "hoa-ready") return <HoaReadinessQuiz />;
   return null;
 }

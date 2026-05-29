@@ -25,7 +25,7 @@ export default function HoaRescue() {
             HOA letters are stressful because they usually come with a short deadline. VIRENZA can clean up the visible problems, repair irrigation, replace dead plants, and get the yard looking compliant again.
           </p>
           <Link
-            href="/?tool=hoa-ready#hoa-ready"
+            href="#hoa-ready"
             className="mt-8 inline-flex bg-[#d8b76a] px-7 py-4 text-sm font-black uppercase tracking-[0.14em] text-black transition-colors hover:bg-[#f0cf81]"
           >
             Check HOA Readiness
