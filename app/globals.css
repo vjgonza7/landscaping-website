@@ -46,6 +46,12 @@ section[id] {
   transform: translateY(-6.5px) rotate(-45deg);
 }
 
+.premium-hero {
+  /* svh fallback: Safari < 15.4 doesn't support svh, falls back to vh */
+  min-height: 92vh;
+  min-height: 92svh;
+}
+
 .premium-hero img {
   filter: saturate(0.72) contrast(1.02) brightness(0.72);
 }
@@ -104,6 +110,7 @@ section[id] {
 
 .yard-tree {
   animation: yard-tree-sway 5s ease-in-out infinite;
+  -webkit-transform-box: fill-box;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
@@ -333,6 +340,7 @@ section[id] {
 
 .about-tree {
   animation: tree-sway 5.5s ease-in-out infinite;
+  -webkit-transform-box: fill-box;
   transform-box: fill-box;
   transform-origin: bottom center;
 }
@@ -440,10 +448,12 @@ button, a {
     animation: none;
     opacity: 1;
   }
-  .reveal, .reveal-left, .reveal-right {
-    transition: none;
-    opacity: 1;
-    transform: none;
+  :root[data-scroll-ready] .reveal,
+  :root[data-scroll-ready] .reveal-left,
+  :root[data-scroll-ready] .reveal-right {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
   }
   .about-lawn,
   .about-sun,
@@ -543,49 +553,27 @@ button, a {
 }
 
 /* ── Scroll reveal ──────────────────────────────────────────────────────── */
-.reveal {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.reveal-left {
-  opacity: 1;
-  transform: translateX(0);
-}
-
+/* Default: always visible (SSR, no-JS, reduced-motion) */
+.reveal,
+.reveal-left,
 .reveal-right {
   opacity: 1;
-  transform: translateX(0);
+  transform: none;
 }
 
-@keyframes reveal-up {
-  from { opacity: 0; transform: translateY(56px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* When IntersectionObserver is active, hide off-screen elements */
+:root[data-scroll-ready] .reveal { opacity: 0; transform: translateY(40px); }
+:root[data-scroll-ready] .reveal-left { opacity: 0; transform: translateX(-50px); }
+:root[data-scroll-ready] .reveal-right { opacity: 0; transform: translateX(50px); }
 
-@keyframes reveal-left {
-  from { opacity: 0; transform: translateX(-60px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes reveal-right {
-  from { opacity: 0; transform: translateX(60px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@supports (animation-timeline: view()) {
-  .reveal,
-  .reveal-left,
-  .reveal-right {
-    animation-duration: 1ms;
-    animation-fill-mode: both;
-    animation-range: entry 5% cover 30%;
-    animation-timeline: view();
-  }
-
-  .reveal { animation-name: reveal-up; }
-  .reveal-left { animation-name: reveal-left; }
-  .reveal-right { animation-name: reveal-right; }
+/* Transition fires when .is-visible is added by the observer */
+:root[data-scroll-ready] .reveal.is-visible,
+:root[data-scroll-ready] .reveal-left.is-visible,
+:root[data-scroll-ready] .reveal-right.is-visible {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.72s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.72s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ── Card hover ─────────────────────────────────────────────────────────── */

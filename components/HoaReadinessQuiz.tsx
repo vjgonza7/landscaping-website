@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import LeadCapture from "./LeadCapture";
 
 const questions = [
@@ -33,25 +33,25 @@ const questions = [
 
 export default function HoaReadinessQuiz() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState<"pass" | "fail" | null>(null);
 
-  const failed = questions.filter((q) => answers[q.id] === q.fail);
   const complete = questions.every((q) => answers[q.id]);
-  const ready = submitted && complete && failed.length === 0;
-  const needsWork = submitted && complete && failed.length > 0;
+  const failedIds = questions
+    .filter((q) => answers[q.id] === q.fail)
+    .map((q) => q.id);
 
-  const message = useMemo(() => {
-    return [
-      "HOA readiness quiz lead.",
-      `Issues flagged: ${failed.map((q) => q.id).join(", ") || "none"}`,
-    ].join("\n");
-  }, [failed]);
+  function handleSubmit() {
+    if (!complete) return;
+    setResult(failedIds.length === 0 ? "pass" : "fail");
+  }
+
+  const message = `HOA readiness quiz lead.\nIssues flagged: ${failedIds.join(", ") || "none"}`;
 
   return (
     <section
       id="hoa-ready"
       className={`px-6 py-20 transition-colors duration-500 md:py-28 ${
-        needsWork
+        result === "fail"
           ? "bg-[radial-gradient(circle_at_70%_20%,rgba(239,68,68,0.22),transparent_34%),linear-gradient(180deg,#210707_0%,#0a0a0a_100%)]"
           : "bg-[#0a0a0a]"
       }`}
@@ -93,7 +93,10 @@ export default function HoaReadinessQuiz() {
                         name={question.id}
                         value={value}
                         checked={answers[question.id] === value}
-                        onChange={() => setAnswers((prev) => ({ ...prev, [question.id]: value }))}
+                        onChange={() => {
+                          setAnswers((prev) => ({ ...prev, [question.id]: value }));
+                          setResult(null);
+                        }}
                         className="sr-only"
                       />
                       {value}
@@ -106,24 +109,25 @@ export default function HoaReadinessQuiz() {
 
           <button
             type="button"
-            onClick={() => setSubmitted(true)}
+            onClick={handleSubmit}
             disabled={!complete}
             className="mt-6 w-full bg-[#d8b76a] px-5 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-colors hover:bg-[#f0cf81] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Check HOA Readiness
           </button>
 
-          {ready && (
+          {result === "pass" && (
             <div className="mt-6 border border-[#d8b76a]/30 bg-[#d8b76a]/10 p-5">
               <p className="text-xl font-black text-white">Looks HOA ready.</p>
               <p className="mt-2 text-sm leading-7 text-white/58">
-                Keep watering consistent and do a quick edge/debris check before inspection days.
-                Your specific HOA CC&Rs still control the final standard.
+                Keep watering consistent and do a quick edge/debris check before
+                inspection days. Your specific HOA CC&Rs still control the final
+                standard.
               </p>
             </div>
           )}
 
-          {needsWork && (
+          {result === "fail" && (
             <div className="mt-6 space-y-5">
               <div className="border border-red-400/50 bg-red-950/40 p-5 shadow-2xl shadow-red-950/30">
                 <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-200">
@@ -133,8 +137,9 @@ export default function HoaReadinessQuiz() {
                   Yard is not HOA ready
                 </p>
                 <p className="mt-3 text-sm leading-7 text-red-50/78">
-                  You flagged {failed.length} issue{failed.length > 1 ? "s" : ""}. We can clean,
-                  repair, trim, and refresh the yard before it becomes a notice or fine.
+                  You flagged {failedIds.length} issue{failedIds.length > 1 ? "s" : ""}.
+                  We can clean, repair, trim, and refresh the yard before it becomes
+                  a notice or fine.
                 </p>
               </div>
               <LeadCapture
