@@ -5,6 +5,7 @@ import { useState } from "react";
 
 const links = [
   { href: "/?tool=heat-survival#heat-survival", label: "Heat Predictor" },
+  { href: "/hoa-check", label: "HOA Check" },
   { href: "#services", label: "Services" },
   { href: "#projects", label: "Projects" },
 ];
