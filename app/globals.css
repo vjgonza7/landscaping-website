@@ -177,19 +177,26 @@ section[id] {
 }
 
 /* ── Transformation Stage ─────────────────────────────────────────────── */
-/* Layout: normal-flow section, no scroll-pinning. Animation is driven     */
-/* by IntersectionObserver setting data-stage="0|1|2|3" on the section.    */
-/* Default (no data-stage / no JS): finished state always visible.         */
+/* Scroll-driven: JS sets --stage-dead/live/polish on the section.         */
+/* Default (no JS / fallback): CSS variables = finished state.             */
 
 .transformation-stage {
   position: relative;
+  height: 380vh;
   background: #070807;
+  --stage-p:      1;
+  --stage-dead:   0;
+  --stage-live:   1;
+  --stage-polish: 1;
 }
 
 .stage-sticky {
-  position: relative;
-  min-height: 88vh;
-  min-height: 88svh;
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(0, 1fr);
   align-items: center;
@@ -202,13 +209,6 @@ section[id] {
   inset: 0;
   background:
     radial-gradient(circle at 72% 28%, rgba(216, 183, 106, 0.08), transparent 28%),
-    linear-gradient(120deg, #070807 0%, #0b100c 52%, #15160e 100%);
-  transition: background 1s ease;
-}
-
-.transformation-stage[data-stage="3"] .stage-bg {
-  background:
-    radial-gradient(circle at 72% 28%, rgba(216, 183, 106, 0.22), transparent 28%),
     linear-gradient(120deg, #070807 0%, #0b100c 52%, #15160e 100%);
 }
 
@@ -244,10 +244,6 @@ section[id] {
   line-height: 1.9;
 }
 
-.stage-visual {
-  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
 .stage-svg {
   width: min(54vw, 820px);
   max-width: 100%;
@@ -256,71 +252,37 @@ section[id] {
   background: #0b100c;
 }
 
-/* Shared transitions on all animated SVG elements */
+/* SVG layers driven by CSS custom properties — no transitions needed      */
+/* (smooth interpolation comes from continuous rAF updates in JS)          */
 .stage-dead-lawn,
-.stage-dead-plants,
-.stage-live-lawn,
-.stage-plants,
-.stage-irrigation,
-.stage-roof-glint,
-.stage-edging,
-.stage-home {
-  transition:
-    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-    stroke-dashoffset 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+.stage-dead-plants {
+  opacity: var(--stage-dead, 0);
 }
 
-/* ── Default / fallback: finished yard (no JS or IO unavailable) ── */
-.stage-dead-lawn,
-.stage-dead-plants  { opacity: 0; }
 .stage-live-lawn,
-.stage-plants       { opacity: 1; }
-.stage-irrigation   { opacity: 0.9; stroke-dasharray: 420; stroke-dashoffset: 0; }
+.stage-plants {
+  opacity: var(--stage-live, 1);
+}
+
+.stage-irrigation {
+  opacity: var(--stage-live, 1);
+  stroke-dasharray: 420;
+  stroke-dashoffset: calc(420px * (1 - var(--stage-live, 1)));
+}
+
 .stage-irrigation circle { animation: stage-droplet 2.2s ease-in-out infinite; }
+
 .stage-roof-glint,
-.stage-edging       { opacity: 1; stroke-dasharray: 820; stroke-dashoffset: 0; }
-.stage-home         { opacity: 1; transform: translateY(0); }
+.stage-edging {
+  opacity: var(--stage-polish, 1);
+  stroke-dasharray: 820;
+  stroke-dashoffset: calc(820px * (1 - var(--stage-polish, 1)));
+}
 
-/* ── Stage 0: dead yard ── */
-.transformation-stage[data-stage="0"] .stage-dead-lawn,
-.transformation-stage[data-stage="0"] .stage-dead-plants  { opacity: 1; }
-.transformation-stage[data-stage="0"] .stage-live-lawn,
-.transformation-stage[data-stage="0"] .stage-plants       { opacity: 0.25; }
-.transformation-stage[data-stage="0"] .stage-irrigation   { opacity: 0; stroke-dashoffset: 420px; }
-.transformation-stage[data-stage="0"] .stage-roof-glint,
-.transformation-stage[data-stage="0"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
-.transformation-stage[data-stage="0"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
-
-/* ── Stage 1: irrigation + cleanup ── */
-.transformation-stage[data-stage="1"] .stage-dead-lawn,
-.transformation-stage[data-stage="1"] .stage-dead-plants  { opacity: 1; }
-.transformation-stage[data-stage="1"] .stage-live-lawn,
-.transformation-stage[data-stage="1"] .stage-plants       { opacity: 0.25; }
-.transformation-stage[data-stage="1"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
-.transformation-stage[data-stage="1"] .stage-roof-glint,
-.transformation-stage[data-stage="1"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
-.transformation-stage[data-stage="1"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
-
-/* ── Stage 2: green yard ── */
-.transformation-stage[data-stage="2"] .stage-dead-lawn,
-.transformation-stage[data-stage="2"] .stage-dead-plants  { opacity: 0; }
-.transformation-stage[data-stage="2"] .stage-live-lawn,
-.transformation-stage[data-stage="2"] .stage-plants       { opacity: 1; }
-.transformation-stage[data-stage="2"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
-.transformation-stage[data-stage="2"] .stage-roof-glint,
-.transformation-stage[data-stage="2"] .stage-edging       { opacity: 0; stroke-dashoffset: 820px; }
-.transformation-stage[data-stage="2"] .stage-home         { opacity: 0.78; transform: translateY(10px); }
-
-/* ── Stage 3: estate finish ── */
-.transformation-stage[data-stage="3"] .stage-dead-lawn,
-.transformation-stage[data-stage="3"] .stage-dead-plants  { opacity: 0; }
-.transformation-stage[data-stage="3"] .stage-live-lawn,
-.transformation-stage[data-stage="3"] .stage-plants       { opacity: 1; }
-.transformation-stage[data-stage="3"] .stage-irrigation   { opacity: 0.9; stroke-dashoffset: 0; }
-.transformation-stage[data-stage="3"] .stage-roof-glint,
-.transformation-stage[data-stage="3"] .stage-edging       { opacity: 1; stroke-dashoffset: 0; }
-.transformation-stage[data-stage="3"] .stage-home         { opacity: 1; transform: translateY(0); }
+.stage-home {
+  opacity: calc(0.78 + 0.22 * var(--stage-live, 1));
+  transform: translateY(calc(10px * (1 - var(--stage-live, 1))));
+}
 
 /* ── Steps indicator ── */
 .stage-steps {
@@ -340,21 +302,9 @@ section[id] {
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  transition: opacity 0.6s ease, color 0.6s ease;
-  opacity: 1;
 }
-.stage-steps span:nth-child(4) { color: #d8b76a; }
 
-/* Hide most steps while staged animation runs */
-.transformation-stage[data-stage] .stage-steps span { opacity: 0.22; }
-.transformation-stage[data-stage="0"] .stage-steps span:nth-child(1) { opacity: 1; }
-.transformation-stage[data-stage="1"] .stage-steps span:nth-child(1),
-.transformation-stage[data-stage="1"] .stage-steps span:nth-child(2) { opacity: 1; }
-.transformation-stage[data-stage="2"] .stage-steps span:nth-child(1),
-.transformation-stage[data-stage="2"] .stage-steps span:nth-child(2),
-.transformation-stage[data-stage="2"] .stage-steps span:nth-child(3) { opacity: 1; }
-.transformation-stage[data-stage="3"] .stage-steps span { opacity: 1; }
-.transformation-stage[data-stage="3"] .stage-steps span:nth-child(4) { color: #d8b76a; }
+.stage-steps span:nth-child(4) { color: #d8b76a; }
 
 @keyframes stage-droplet {
   0%, 100% { opacity: 0.18; transform: translateY(5px); }
@@ -513,37 +463,43 @@ button, a {
   .yard-sun {
     animation: none;
   }
-  /* Disable transitions on stage elements for reduced-motion */
-  .stage-dead-lawn,
-  .stage-dead-plants,
-  .stage-live-lawn,
-  .stage-plants,
-  .stage-irrigation,
-  .stage-roof-glint,
-  .stage-edging,
-  .stage-home,
-  .stage-steps span {
-    transition: none !important;
+  /* Bypass scroll pinning and show finished state immediately */
+  .transformation-stage {
+    height: auto;
+    --stage-dead:   0;
+    --stage-live:   1;
+    --stage-polish: 1;
+    --stage-p:      1;
+  }
+  .stage-sticky {
+    position: relative;
+    height: auto;
+    min-height: 88svh;
   }
 }
 
 @media (max-width: 900px) {
+  .transformation-stage { height: 280vh; }
+
   .stage-sticky {
     grid-template-columns: 1fr;
-    min-height: 0;
-    padding: 5rem 1.5rem 3rem;
+    padding: 5rem clamp(1.2rem, 5vw, 2rem) 5rem;
+    gap: 2rem;
+    justify-items: center;
   }
 
-  .stage-svg {
-    width: 100%;
-  }
+  .stage-copy { text-align: center; }
+  .stage-copy h2 { font-size: clamp(2rem, 8vw, 3.2rem); }
+  .stage-copy p:not(.stage-kicker) { font-size: 0.95rem; }
+
+  .stage-svg { width: min(90vw, 440px); }
 
   .stage-steps {
     position: relative;
     left: auto;
     right: auto;
     bottom: auto;
-    grid-column: 1;
+    width: 100%;
     margin-top: 1rem;
   }
 }

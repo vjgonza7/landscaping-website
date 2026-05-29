@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+function clamp(v: number) { return Math.max(0, Math.min(1, v)); }
+
 export default function TransformationStage() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -9,51 +11,36 @@ export default function TransformationStage() {
     const section = sectionRef.current;
     if (!section) return;
 
-    // Respect reduced-motion — show finished state immediately, no animation
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      section.dataset.stage = "3";
-      return;
-    }
+    // CSS handles finished state for reduced-motion users — no JS needed
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    // No IO support — show finished state immediately
-    if (!("IntersectionObserver" in window)) {
-      section.dataset.stage = "3";
-      return;
-    }
+    let rafId = 0;
 
-    // Start in dead state (animation hasn't played yet)
-    section.dataset.stage = "0";
+    const update = () => {
+      const rect = section.getBoundingClientRect();
+      const range = section.offsetHeight - window.innerHeight;
+      if (range <= 0) return;
 
-    const timers: ReturnType<typeof setTimeout>[] = [];
-
-    const runAnimation = () => {
-      timers.push(setTimeout(() => { section.dataset.stage = "1"; }, 450));
-      timers.push(setTimeout(() => { section.dataset.stage = "2"; }, 1450));
-      timers.push(setTimeout(() => { section.dataset.stage = "3"; }, 2500));
+      const p = clamp(-rect.top / range);
+      section.style.setProperty("--stage-p",      p.toFixed(3));
+      section.style.setProperty("--stage-dead",    clamp(1 - p * 1.7).toFixed(3));
+      section.style.setProperty("--stage-live",    clamp((p - 0.12) * 1.6).toFixed(3));
+      section.style.setProperty("--stage-polish",  clamp((p - 0.58) * 2.2).toFixed(3));
     };
 
-    // If the section is already in view on load, start immediately
-    const rect = section.getBoundingClientRect();
-    if (rect.top < window.innerHeight * 0.85 && rect.bottom > 0) {
-      runAnimation();
-      return () => timers.forEach(clearTimeout);
-    }
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(update);
+    };
 
-    // Otherwise wait for the section to scroll into view
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        runAnimation();
-      },
-      { threshold: 0.1 }
-    );
-
-    observer.observe(section);
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
 
     return () => {
-      observer.disconnect();
-      timers.forEach(clearTimeout);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", update);
+      cancelAnimationFrame(rafId);
     };
   }, []);
 
