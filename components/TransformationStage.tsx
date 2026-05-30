@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 
+function clamp(v: number) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
 export default function TransformationStage() {
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -9,25 +11,40 @@ export default function TransformationStage() {
     const section = sectionRef.current;
     if (!section) return;
 
+    // CSS defaults (finished state) handle reduced-motion / no-JS cases.
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (!("IntersectionObserver" in window)) return;
 
-    section.style.opacity = "0";
-    section.style.transform = "translateY(24px)";
-    section.style.transition = "opacity 0.9s ease, transform 0.9s ease";
+    let rafId = 0;
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        section.style.opacity = "1";
-        section.style.transform = "translateY(0)";
-      },
-      { threshold: 0.05 }
-    );
+    const update = () => {
+      const rect = section.getBoundingClientRect();
+      const viewH = window.innerHeight;
 
-    observer.observe(section);
-    return () => observer.disconnect();
+      // p = 0 when section top is at viewport bottom (just entering)
+      // p = 1 when section top reaches viewport top (fully scrolled in)
+      // Works on all browsers including iOS Safari — plain rAF + getBoundingClientRect
+      const p = clamp(1 - rect.top / viewH);
+
+      section.style.setProperty("--stage-dead",   clamp(1 - p * 1.7).toFixed(3));
+      section.style.setProperty("--stage-live",   clamp((p - 0.12) * 1.6).toFixed(3));
+      section.style.setProperty("--stage-polish", clamp((p - 0.58) * 2.2).toFixed(3));
+    };
+
+    const onScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(update);
+    };
+
+    // Seed on mount so section starts at correct state immediately
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", update);
+      cancelAnimationFrame(rafId);
+    };
   }, []);
 
   return (

@@ -183,6 +183,10 @@ section[id] {
 .transformation-stage {
   position: relative;
   background: #070807;
+  /* Finished-state fallback (no JS / reduced-motion) */
+  --stage-dead:   0;
+  --stage-live:   1;
+  --stage-polish: 1;
 }
 
 .stage-sticky {
@@ -244,16 +248,37 @@ section[id] {
   background: #0b100c;
 }
 
-/* SVG layers — finished (green yard) state, always visible */
+/* SVG layers driven by CSS custom properties set by JS scroll tracking.  */
+/* Default values above = finished state (fallback when JS is absent).    */
 .stage-dead-lawn,
-.stage-dead-plants  { opacity: 0; }
+.stage-dead-plants {
+  opacity: var(--stage-dead, 0);
+}
+
 .stage-live-lawn,
-.stage-plants       { opacity: 1; }
-.stage-irrigation   { opacity: 0.9; stroke-dasharray: 420; stroke-dashoffset: 0; }
+.stage-plants {
+  opacity: var(--stage-live, 1);
+}
+
+.stage-irrigation {
+  opacity: var(--stage-live, 1);
+  stroke-dasharray: 420;
+  stroke-dashoffset: calc(420px * (1 - var(--stage-live, 1)));
+}
+
 .stage-irrigation circle { animation: stage-droplet 2.2s ease-in-out infinite; }
+
 .stage-roof-glint,
-.stage-edging       { opacity: 1; stroke-dasharray: 820; stroke-dashoffset: 0; }
-.stage-home         { opacity: 1; transform: translateY(0); }
+.stage-edging {
+  opacity: var(--stage-polish, 1);
+  stroke-dasharray: 820;
+  stroke-dashoffset: calc(820px * (1 - var(--stage-polish, 1)));
+}
+
+.stage-home {
+  opacity: calc(0.78 + 0.22 * var(--stage-live, 1));
+  transform: translateY(calc(10px * (1 - var(--stage-live, 1))));
+}
 
 /* ── Steps indicator ── */
 .stage-steps {
