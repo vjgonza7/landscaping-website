@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import LeadCapture from "./LeadCapture";
+import HoaRiskCalculator from "./HoaRiskCalculator";
 
 const questions = [
   {
@@ -138,8 +139,7 @@ export default function HoaReadinessQuiz() {
                 </p>
                 <p className="mt-3 text-sm leading-7 text-red-50/78">
                   You flagged {failedIds.length} issue{failedIds.length > 1 ? "s" : ""}.
-                  We can clean, repair, trim, and refresh the yard before it becomes
-                  a notice or fine.
+                  See your estimated fine exposure and VIRENZA resolution cost below.
                 </p>
               </div>
               <LeadCapture
@@ -151,6 +151,12 @@ export default function HoaReadinessQuiz() {
           )}
         </div>
       </div>
+
+      {result === "fail" && (
+        <div className="mx-auto max-w-7xl">
+          <HoaRiskCalculator failedIds={failedIds} />
+        </div>
+      )}
     </section>
   );
 }
