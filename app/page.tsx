@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import Hero from "@/components/Hero";
+import Transformations from "@/components/Transformations";
 import TransformationStage from "@/components/TransformationStage";
 import Services from "@/components/Services";
 import BeforeAfter from "@/components/BeforeAfter";
@@ -18,6 +19,7 @@ export default function Home() {
       <Nav />
       <main id="main-content">
         <Hero />
+        <Transformations />
         <div className="relative z-10 bg-[#0a0a0a]">
           <HiddenTools />
           <TransformationStage />

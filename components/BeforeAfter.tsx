@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 
 const projects = [
@@ -7,36 +8,36 @@ const projects = [
     id: 1,
     title: "Scottsdale Backyard Overhaul",
     type: "Landscaping",
-    before: { bg: "from-yellow-950 to-amber-900", label: "Dead grass, overgrown weeds" },
-    after:  { bg: "from-green-900 to-emerald-800", label: "Lush sod, clean borders" },
+    before: { label: "Dead grass, overgrown weeds", position: "21% 30%", scale: 1.75 },
+    after: { label: "Lush sod, clean borders", position: "76% 30%", scale: 1.75 },
   },
   {
     id: 2,
     title: "Irrigation System Rescue",
     type: "Irrigation Repair",
-    before: { bg: "from-orange-950 to-red-900",    label: "3 broken valves, flooded patches" },
-    after:  { bg: "from-teal-900 to-cyan-900",     label: "Full system restored" },
+    before: { label: "3 broken valves, flooded patches", position: "41% 29%", scale: 2.4 },
+    after: { label: "Full system restored", position: "67% 30%", scale: 2.55 },
   },
   {
     id: 3,
     title: "Phoenix Front Yard",
     type: "Yard Cleanup + Landscaping",
-    before: { bg: "from-stone-900 to-stone-800",   label: "Overgrown desert scrub" },
-    after:  { bg: "from-green-950 to-lime-900",    label: "Modern desert xeriscape" },
+    before: { label: "Overgrown desert scrub", position: "34% 31%", scale: 2.35 },
+    after: { label: "Modern desert xeriscape", position: "73% 34%", scale: 2.35 },
   },
   {
     id: 4,
     title: "HOA Notice Turnaround",
     type: "HOA Rescue",
-    before: { bg: "from-red-950 to-stone-900", label: "Weeds, debris, dead shrubs" },
-    after: { bg: "from-emerald-950 to-stone-800", label: "Clean, compliant frontage" },
+    before: { label: "Weeds, debris, dead shrubs", position: "18% 36%", scale: 2.35 },
+    after: { label: "Clean, compliant frontage", position: "86% 33%", scale: 2.35 },
   },
   {
     id: 5,
     title: "Artificial Turf Refresh",
     type: "Artificial Turf",
-    before: { bg: "from-yellow-950 to-stone-900", label: "Patchy grass, dusty edges" },
-    after: { bg: "from-lime-950 to-green-800", label: "Tidy turf and sharp borders" },
+    before: { label: "Patchy grass, dusty edges", position: "29% 40%", scale: 2.45 },
+    after: { label: "Tidy turf and sharp borders", position: "72% 40%", scale: 2.45 },
   },
 ];
 
@@ -98,24 +99,44 @@ export default function BeforeAfter() {
               className={`reveal d${i + 1} card-hover overflow-hidden border border-white/10 bg-[#10120f]`}
             >
               {/* Before / After panels */}
-              <div className="relative h-44">
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-1/2 bg-gradient-to-br ${p.before.bg} flex items-end p-3`}
-                >
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 bg-black/40 px-2 py-1 rounded-md">
+              <div className="relative h-52 sm:h-56">
+                <div className="absolute bottom-0 left-0 top-0 flex w-1/2 items-end overflow-hidden border-r border-black/70 p-3">
+                  <Image
+                    src="/images/virenza-before-after.png"
+                    alt={`${p.title} before landscaping work`}
+                    fill
+                    sizes="(min-width: 768px) 16vw, 50vw"
+                    className="object-cover brightness-[0.72] saturate-[0.82]"
+                    style={{
+                      objectPosition: p.before.position,
+                      transform: `scale(${p.before.scale})`,
+                      transformOrigin: p.before.position,
+                    }}
+                  />
+                  <span className="relative z-10 rounded-md bg-black/58 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-white/72 ring-1 ring-white/10">
                     Before
                   </span>
                 </div>
 
                 {/* Divider */}
-                <div className="absolute left-1/2 top-1/2 z-10 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center border border-[#d8b76a]/30 bg-[#0e0e0e]">
+                <div className="absolute left-1/2 top-1/2 z-20 flex h-8 w-8 -translate-x-1/2 -translate-y-1/2 items-center justify-center border border-[#d8b76a]/45 bg-[#0e0e0e] shadow-[0_0_22px_rgba(0,0,0,0.55)]">
                   <span className="text-xs font-bold text-[#d8b76a]">→</span>
                 </div>
 
-                <div
-                  className={`absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-br ${p.after.bg} flex items-end justify-end p-3`}
-                >
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-white/50 bg-black/40 px-2 py-1 rounded-md">
+                <div className="absolute bottom-0 right-0 top-0 flex w-1/2 items-end justify-end overflow-hidden p-3">
+                  <Image
+                    src="/images/virenza-before-after.png"
+                    alt={`${p.title} after landscaping work`}
+                    fill
+                    sizes="(min-width: 768px) 16vw, 50vw"
+                    className="object-cover brightness-[0.94] saturate-[1.08]"
+                    style={{
+                      objectPosition: p.after.position,
+                      transform: `scale(${p.after.scale})`,
+                      transformOrigin: p.after.position,
+                    }}
+                  />
+                  <span className="relative z-10 rounded-md bg-black/58 px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-white/72 ring-1 ring-[#d8b76a]/20">
                     After
                   </span>
                 </div>
