@@ -79,6 +79,42 @@ const projects: Project[] = [
     before: { label: "Patchy grass, dusty edges", position: "29% 40%", scale: 2.45 },
     after: { label: "Tidy turf and sharp borders", position: "72% 40%", scale: 2.45 },
   },
+  {
+    id: 6,
+    title: "House Yard Cleanup",
+    type: "Yard Cleanup + Landscaping",
+    filterId: "yard-cleanup-landscaping",
+    before: {
+      label: "Overgrown shrubs, tangled growth",
+      position: "50% 50%",
+      scale: 1.0,
+      image: "/images/projects/house-yard-before.jpg",
+    },
+    after: {
+      label: "Trimmed, clean curb appeal",
+      position: "50% 50%",
+      scale: 1.0,
+      image: "/images/projects/house-yard-after.jpg",
+    },
+  },
+  {
+    id: 7,
+    title: "Commercial Property Cleanup",
+    type: "Yard Cleanup + Landscaping",
+    filterId: "yard-cleanup-landscaping",
+    before: {
+      label: "Heavy overgrowth along perimeter fence",
+      position: "50% 50%",
+      scale: 1.0,
+      image: "/images/projects/commercial-before.jpg",
+    },
+    after: {
+      label: "Brush cleared, clean access restored",
+      position: "50% 50%",
+      scale: 1.0,
+      image: "/images/projects/commercial-after.jpg",
+    },
+  },
 ];
 
 const stats = [
