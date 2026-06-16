@@ -40,30 +40,6 @@ const fallbackPanel: Required<ImagePanel> = {
 
 const projects: Project[] = [
   {
-    id: 1,
-    title: "Scottsdale Backyard Overhaul",
-    type: "Landscaping",
-    filterId: "landscaping",
-    before: { label: "Dead grass, overgrown weeds", position: "21% 30%", scale: 1.75 },
-    after: { label: "Lush sod, clean borders", position: "76% 30%", scale: 1.75 },
-  },
-  {
-    id: 2,
-    title: "Irrigation System Rescue",
-    type: "Irrigation Repair",
-    filterId: "irrigation-repair",
-    before: { label: "3 broken valves, flooded patches", position: "41% 29%", scale: 2.4 },
-    after: { label: "Full system restored", position: "67% 30%", scale: 2.55 },
-  },
-  {
-    id: 3,
-    title: "Phoenix Front Yard",
-    type: "Yard Cleanup + Landscaping",
-    filterId: "yard-cleanup-landscaping",
-    before: { label: "Overgrown desert scrub", position: "34% 31%", scale: 2.35 },
-    after: { label: "Modern desert xeriscape", position: "73% 34%", scale: 2.35 },
-  },
-  {
     id: 4,
     title: "HOA Notice Turnaround",
     type: "HOA Rescue",
@@ -72,27 +48,19 @@ const projects: Project[] = [
     after: { label: "Clean, compliant frontage", position: "86% 33%", scale: 2.35 },
   },
   {
-    id: 5,
-    title: "Artificial Turf Refresh",
-    type: "Artificial Turf",
-    filterId: "artificial-turf",
-    before: { label: "Patchy grass, dusty edges", position: "29% 40%", scale: 2.45 },
-    after: { label: "Tidy turf and sharp borders", position: "72% 40%", scale: 2.45 },
-  },
-  {
     id: 6,
     title: "House Yard Cleanup",
     type: "Yard Cleanup + Landscaping",
     filterId: "yard-cleanup-landscaping",
     before: {
       label: "Overgrown shrubs, tangled growth",
-      position: "50% 50%",
+      position: "50% 20%",
       scale: 1.0,
       image: "/images/projects/house-yard-before.jpg",
     },
     after: {
       label: "Trimmed, clean curb appeal",
-      position: "50% 50%",
+      position: "50% 80%",
       scale: 1.0,
       image: "/images/projects/house-yard-after.jpg",
     },
